@@ -23,7 +23,6 @@ class Base:
         self._image = Image.open(fp)
         self.image = self._image.copy()
         self.w, self.h = self.image.size
-        print(self.text)
 
     def paste(self) -> None:
         for i, el in enumerate(Path("images").glob("*")):
