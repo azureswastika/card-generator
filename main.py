@@ -35,39 +35,29 @@ class Base:
 
             # card numeration
             w, h = draw.textsize(str(i + 1), self.header)
+            box = (112 - w // 2, 112 - h // 1.5)
             draw.text(
-                (112 - w // 2, 112 - h // 1.5),
-                str(i + 1),
-                font=self.header,
-                fill=self.white,
+                box, str(i + 1), font=self.header, fill=self.white,
             )
 
             # card header
             w, h = draw.textsize(self.text[i][0], self.header)
+            box = (470 - w // 2, 920 - h // 1.5)
             draw.text(
-                (470 - w // 2, 920 - h // 1.5),
-                self.text[i][0],
-                font=self.header,
-                fill=self.white,
+                box, self.text[i][0], font=self.header, fill=self.white,
             )
 
             # card desc 1
             draw.text(
-                (90, 940),
-                self.text[i][1],
-                font=self.paragraph,
-                fill=self.white,
+                (90, 940), self.text[i][1], font=self.paragraph, fill=self.white,
             )
 
             # card desc 2
             draw.text(
-                (490, 940),
-                self.text[i][2],
-                font=self.paragraph,
-                fill=self.white,
+                (490, 940), self.text[i][2], font=self.paragraph, fill=self.white,
             )
 
-            self.image.convert('RGB').save(f"{inplace.path.stem}.jpg")
+            self.image.convert("RGB").save(f"{inplace.path.stem}.jpg")
             self.reset()
 
     def reset(self) -> None:
