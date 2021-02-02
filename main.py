@@ -127,6 +127,10 @@ class Main:
 
     def create_frontend(self, obj: Folder):
         for i, el in enumerate(obj.frontend):
+            if el.w > 710 or el.h > 590:
+                el.image.thumbnail((710, 590), Image.ANTIALIAS)
+                el.w = el.image.width
+                el.h = el.image.height
             box = (
                 (self.frontend.w - el.w) // 2,
                 (self.frontend.h - el.h) // 2 - 200,
