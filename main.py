@@ -76,7 +76,7 @@ class Main:
     def __init__(self) -> None:
         if not self.output.exists():
             self.output.mkdir()
-            self.folders = [Folder(i) for i in Path(DATA_DIR).glob("*/")]
+        self.folders = [Folder(i) for i in Path(DATA_DIR).glob("*/")]
 
     def start(self) -> None:
         for folder in self.folders:
