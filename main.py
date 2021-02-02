@@ -30,7 +30,12 @@ class Inplace:
     def __init__(self, fp: Path) -> None:
         self.path = fp
         self.image = Image.open(fp)
-        self.w, self.h = self.image.size
+        if self.image.width > 710 or self.image.height > 590:
+            self.image.thumbnail((710, 590), Image.ANTIALIAS)
+            self.w = self.image.width
+            self.h = self.image.height
+        else:
+            self.w, self.h = self.image.size
 
 
 class Text:
@@ -115,11 +120,13 @@ class Main:
             box, "0", font=self.header, fill=self.white,
         )
 
-        w, h = draw.textsize(obj.text.title, self.header)
-        box = (470 - w // 2, 1150 - h // 2)
-        draw.text(
-            box, obj.text.title, font=self.header, fill=self.white,
-        )
+        # adding header on main.jpg
+        # w, h = draw.textsize(obj.text.title, self.header)
+        # box = (470 - w // 2, 1150 - h // 2)
+        # draw.text(
+        #     box, obj.text.title, font=self.header, fill=self.white,
+        # )
+
         self.main.image.convert("RGB").save(
             self.output.joinpath(f"{obj.dirname}/main{FFORMAT}")
         )
@@ -127,10 +134,6 @@ class Main:
 
     def create_frontend(self, obj: Folder):
         for i, el in enumerate(obj.frontend):
-            if el.w > 710 or el.h > 590:
-                el.image.thumbnail((710, 590), Image.ANTIALIAS)
-                el.w = el.image.width
-                el.h = el.image.height
             box = (
                 (self.frontend.w - el.w) // 2,
                 (self.frontend.h - el.h) // 2 - 200,
