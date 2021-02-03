@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Проекты{% endblock title %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-7">
+      <h1>Проекты</h1>
+      <div class="accordion" id="accordionExample">
+        {% for project in projects %}
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ project }}">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ project }}" aria-expanded="true" aria-controls="collapse{{ project }}">
+                {{ project.name }}
+              </button>
+            </h2>
+            <div id="collapse{{ project }}" class="accordion-collapse collapse" aria-labelledby="heading{{ project }}" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <a class="btn btn-primary" href="{{ url_for('project', pk=project.id) }}">Открыть</a>
+                <a class="btn btn-danger" href="{{ url_for('delete_project', pk=project.id) }}">Удалить</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-5">
+      <form class="form-control" method="POST" action="/">
+        {{ form.name.label }} {{ form.name(size=20) }}
+        <input class="btn btn-primary mt-2" type="submit" value="Создать">
+      </form>
+    </div>
+  </div>
+
+
+{% endblock content %}
