@@ -4,17 +4,31 @@
 
 {% block content %}
   <div class="row">
-    <div class="col-7">
+    <div class="col-8">
       <h1>Проект: {{ project.name }}</h1>
         <form class="form-control" method="POST" enctype="multipart/form-data">
-          {{ backend_form.title.label }} {{ backend_form.title(size=20) }}
-          <img src="{{ url_for('static', filename=project.backend.image) }}" />
-          {{ backend_form.image.label }} {{ backend_form.image(size=20) }}
-          <input class="btn btn-primary mt-2" type="submit" value="Создать">
+          {{ backend_form.title.label }} {{ backend_form.title }}
+          {% if project.backend.backend %}
+            <img src="{{ url_for('static', filename=project.backend.backend) }}" /> <br />
+          {% endif %}
+          {{ backend_form.backend.label }} {{ backend_form.backend }}
+          {% if project.backend.main %}
+            <img src="{{ url_for('static', filename=project.backend.backend) }}" /> <br />
+          {% endif %}
+          {{ backend_form.main.label }} {{ backend_form.main }}
+          <input class="btn btn-primary mt-2 mb-4" type="submit" value="Создать / Обновить">
         </form>
+        <form class="form-control mt-2" method="POST" enctype="multipart/form-data">
+          <h2>Добавить карту</h2>
+          {{ card_form.title.label }} {{ card_form.title }}
+          {{ card_form.image.label }} {{ card_form.image }}
+          {{ card_form.block1.label }} {{ card_form.block1 }}
+          {{ card_form.block2.label }} {{ card_form.block2 }}
+          <input class="btn btn-primary mt-2" type="submit" value="Создать / Обновить">
+        </form>
+        <a class="btn btn-danger mt-4" href="{{ url_for('delete_project', pk=project.id) }}">Удалить</a>
     </div>
-    <div class="col-5">
-      
+    <div class="col-4">
     </div>
   </div>
 

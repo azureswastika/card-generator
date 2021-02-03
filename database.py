@@ -1,4 +1,5 @@
-from peewee import CharField, ForeignKeyField, Model, SqliteDatabase
+from peewee import (CharField, ForeignKeyField, IntegerField, Model,
+                    SqliteDatabase, TextField)
 
 db = SqliteDatabase("database.db")
 
@@ -16,12 +17,23 @@ class Project(BaseModel):
 
     def backend(self):
         self.backend = ProjectBackend.get_or_none(project=self)
+        self.cards = ProjectCard.select().where(ProjectCard.project == self)
 
 
 class ProjectBackend(BaseModel):
     project = ForeignKeyField(Project, on_delete="CASCADE", unique=True)
     title = CharField(55)
+    backend = CharField(255)
+    main = CharField(255)
+
+
+class ProjectCard(BaseModel):
+    project = ForeignKeyField(Project, on_delete="CASCADE")
+    num = IntegerField()
+    title = CharField(55)
     image = CharField(255)
+    block1 = TextField(default='')
+    block2 = TextField(default='')
 
 
 tables = [cls for cls in BaseModel.__subclasses__()]
