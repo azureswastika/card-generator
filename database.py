@@ -19,7 +19,10 @@ class Project(BaseModel):
     name = CharField(100, unique=True)
 
     def dlt(self):
-        ProjectBackend.get_or_none(project=self).delete_instance()
+        try:
+            ProjectBackend.get(project=self).delete_instance()
+        except Exception:
+            pass
         for el in ProjectCard.select().where(ProjectCard.project == self):
             el.delete_instance()
         return self.delete_instance()

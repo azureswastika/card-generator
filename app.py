@@ -2,7 +2,6 @@ from pathlib import Path
 from random import choices
 from shutil import rmtree
 from string import ascii_letters
-from textwrap import fill
 
 from flask import Flask, redirect, render_template, request
 from flask.helpers import url_for
@@ -112,8 +111,8 @@ def add_card(pk):
     if request.method == "POST":
         if card_form.validate_on_submit():
             card_title = card_form.title.data
-            block1 = fill(card_form.block1.data, 64)
-            block2 = fill(card_form.block2.data, 64)
+            block1 = card_form.block1.data
+            block2 = card_form.block2.data
             image = request.files["image"]
             path = upload_dir.joinpath(obj.name, secure_filename(image.filename))
             if path.exists():
@@ -149,8 +148,8 @@ def delete_card(project, card):
 @app.route("/project/<int:pk>/generate", methods=["GET"])
 def generat_project(pk):
     obj = Project.get_by_id(pk)
-    if obj:
-        obj.backend()
+    obj.backend()
+    if obj and obj.backend and obj.cards:
         generator = Geneartor(obj)
         generator.start()
     return redirect(url_for("project", pk=pk))

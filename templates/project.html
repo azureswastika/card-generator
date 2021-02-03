@@ -26,13 +26,13 @@ content %}
       <input
         class="btn btn-primary mt-2 mb-4"
         type="submit"
-        value="Создать / Обновить"
+        value="{% if not project.backend %}Создать{% else %}Обновить{% endif %}"
       />
     </form>
     <a
       class="btn btn-primary mt-4"
       href="{{ url_for('generat_project', pk=project.id) }}"
-      >Создать</a
+      >Сгенирировать</a
     >
     <a
       class="btn btn-danger mt-4"
@@ -50,11 +50,11 @@ content %}
       {% for card in project.cards %}
         <a
           class="list-group-item list-group-item-action"
-          id="list-{{ card.title }}{{ card.num }}-list"
+          id="list-{{ card.num }}-list"
           data-bs-toggle="list"
-          href="#list-{{ card.title }}{{ card.num }}"
+          href="#list-{{ card.num }}"
           role="tab"
-          aria-controls="{{ card.title }}{{ card.num }}"
+          aria-controls="{{ card.num }}"
           >{{ card.title }}</a
         >
       {% endfor %}
@@ -65,19 +65,25 @@ content %}
       {% for card in project.cards %}
       <div
         class="tab-pane fade"
-        id="list-{{ card.title }}{{ card.num }}"
+        id="list-{{ card.num }}"
         role="tabpanel"
-        aria-labelledby="list-{{ card.title }}{{ card.num }}-list"
+        aria-labelledby="list-{{ card.num }}-list"
       >
-        <h1>{{ card.title }}</h1>
-        <p>{{ card.block1 }}</p>
-        <p>{{ card.block2 }}</p>
         <img
           class="mt-4 mb-2"
           src="{{ url_for('static', filename=card.image) }}"
           style="max-width: 256px; heigth: auto"
         />
         <br />
+        <h1 style="text-align: center;">{{ card.title }}</h1>
+        <div class="row">
+          <div class="col-6" style="display: block; word-break: break-word;">
+            <p>{{ card.block1 }}</p>
+          </div>
+          <div class="col-6" style="display: block; word-break: break-word;">
+            <p>{{ card.block2 }}</p>
+          </div>
+        </div>
         <a class="btn btn-danger mt-2" href="{{ url_for('delete_card', project=project.id, card=card.id) }}">Удалить</a>
       </div>
 

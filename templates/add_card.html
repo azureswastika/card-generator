@@ -13,9 +13,8 @@
             {{ form.image.label }} {{ form.image }}
             {{ form.block1.label }} {{ form.block1 }}
             {{ form.block2.label }} {{ form.block2 }}
-            <input class="btn btn-primary mt-2" type="submit" value="Создать / Обновить">
+            <input class="btn btn-primary mt-2" type="submit" value="Создать">
         </form>
-        <a class="btn btn-danger mt-4" href="{{ url_for('delete_project', pk=project.id) }}">Удалить</a>
     </div>
     <div class="col-4">
     </div>
