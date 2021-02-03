@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Проекты{% endblock title %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-8">
+      <h1>Проект: {{ project.name }}</h1>
+        <form class="form-control mt-2" method="POST" enctype="multipart/form-data">
+            <h2>Добавить карту</h2>
+            {{ form.title.label }} {{ form.title }}
+            {{ form.image.label }} {{ form.image }}
+            {{ form.block1.label }} {{ form.block1 }}
+            {{ form.block2.label }} {{ form.block2 }}
+            <input class="btn btn-primary mt-2" type="submit" value="Создать / Обновить">
+        </form>
+        <a class="btn btn-danger mt-4" href="{{ url_for('delete_project', pk=project.id) }}">Удалить</a>
+    </div>
+    <div class="col-4">
+    </div>
+  </div>
+{% endblock %}
