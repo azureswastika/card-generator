@@ -1,26 +1,34 @@
 # Card generator
 
-## Data file format
+## Установка
 
-```txt
-# example
+```bash
+git clone https://github.com/azureswastika/photo-generator.git # или скачать архив
+...
+pip install -r requirements.txt
+```
 
-:::First header
-|||
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed felis lacus, pretium eget blandit non, eleifend vel dui.
-Etiam eros mauris, posuere eget augue sit amet, blandit porttitor metus.
-Nullam in tempor velit, et varius dui. Quisque eget volutpat neque.
-Interdum et malesuada fames ac ante ipsum primis in faucibus.
-Aliquam erat volutpat. Donec pharetra ipsum in diam posuere,
-sed eleifend diam facilisis.
-|||
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed felis lacus, pretium eget blandit non, eleifend vel dui.
-Etiam eros mauris, posuere eget augue sit amet, blandit porttitor metus.
-Nullam in tempor velit, et varius dui. Quisque eget volutpat neque.
-Interdum et malesuada fames ac ante ipsum primis in faucibus.
-Aliquam erat volutpat. Donec pharetra ipsum in diam posuere,
-sed eleifend diam facilisis.
+## Запуск
 
+```bash
+python app.py # или запустить файл start.bat
+```
+
+## При ошибке "flask_uploads: ImportError"
+
+```py
+# Файл - env/Lib/site-packeges/flask_uploads.py
+...
+from werkzeug import secure_filename,FileStorage
+...
+```
+
+заменить на
+
+```py
+# Файл - env/Lib/site-packeges/flask_uploads.py
+...
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import  FileStorage
+...
 ```
