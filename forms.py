@@ -17,10 +17,10 @@ class CreateProject(FlaskForm):
 class AddBackendProject(FlaskForm):
     title = StringField("Заголовок", validators=[DataRequired()], render_kw=style)
     backend = FileField(
-        "Backend", validators=[FileRequired(), FileAllowed(images)], render_kw=style
+        "Оборотная сторона", validators=[FileAllowed(images)], render_kw=style
     )
     main = FileField(
-        "Main", validators=[FileRequired(), FileAllowed(images)], render_kw=style
+        "Нулевая страница", validators=[FileAllowed(images)], render_kw=style
     )
 
 

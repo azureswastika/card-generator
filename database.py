@@ -39,8 +39,8 @@ class Project(BaseModel):
 class ProjectBackend(BaseModel):
     project = ForeignKeyField(Project, on_delete="CASCADE", unique=True)
     title = CharField(55)
-    backend = CharField(255, default=None)
-    main = CharField(255, default=None)
+    backend = CharField(255, default=None, null=True)
+    main = CharField(255, default=None, null=True)
 
 
 class ProjectCard(BaseModel):

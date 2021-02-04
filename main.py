@@ -74,11 +74,22 @@ class Geneartor:
                 self.f_backend, box, self.f_backend.convert("RGBA")
             )
         draw = ImageDraw.Draw(self.backend.image)
-        w, h = draw.textsize(self.title, self.header)
-        box = ((self.backend.w - w) / 2, 1150 - h / 2)
-        draw.multiline_text(
-            box, self.title, font=self.header, fill=self.blue, align="center"
-        )
+        if list(self.title).count("\n") >= 2:
+            n_count = list(self.title).count("\n")
+            self.title = self.process_text(self.title, 35 + 5 * n_count)
+            subheader = ImageFont.truetype("src/Oswald-Regular.ttf", 55 - 5 * n_count)
+            self.title = self.process_text(self.title, 40)
+            w, h = draw.textsize(self.title, subheader)
+            box = ((self.backend.w - w) / 2, 1150 - h / 2)
+            draw.multiline_text(
+                box, self.title, font=subheader, fill=self.blue, align="center"
+            )
+        else:
+            w, h = draw.textsize(self.title, self.header)
+            box = ((self.backend.w - w) / 2, 1150 - h / 2)
+            draw.multiline_text(
+                box, self.title, font=self.header, fill=self.blue, align="center"
+            )
         self.backend.image.convert(CONVERT).save(
             self.output.joinpath(f"{self.name}/backend.{FFORMAT}")
         )
@@ -132,16 +143,26 @@ class Geneartor:
             w, h = draw.textsize(str(i + 1), self.header)
             box = (112 - w // 2, 112 - h // 1.5)
             draw.text(box, str(i + 1), font=self.header, fill=self.white2)
-
-            w, h = draw.textsize(self.process_text(el.title), self.header)
-            box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
-            draw.multiline_text(
-                box,
-                self.process_text(el.title),
-                font=self.header,
-                fill=self.white2,
-                align="center",
-            )
+            title = self.process_text(el.title)
+            if list(title).count("\n") >= 2:
+                n_count = list(title).count("\n")
+                title = self.process_text(el.title, 35 + 5 * n_count)
+                subheader = ImageFont.truetype("src/Oswald-Regular.ttf", 55 - 5 * n_count)
+                w, h = draw.textsize(title, subheader)
+                box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
+                draw.multiline_text(
+                    box,
+                    title,
+                    font=subheader,
+                    fill=self.white2,
+                    align="center",
+                )
+            else:
+                w, h = draw.textsize(title, self.header)
+                box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
+                draw.multiline_text(
+                    box, title, font=self.header, fill=self.white2, align="center",
+                )
 
             draw.multiline_text(
                 (90, 960),

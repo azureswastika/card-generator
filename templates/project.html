@@ -26,7 +26,7 @@ content %}
       <input
         class="btn btn-primary mt-2 mb-4"
         type="submit"
-        value="{% if not project.backend %}Создать{% else %}Обновить{% endif %}"
+        value="{% if not project.backend %}Создать{% else %}Сохранить{% endif %}"
       />
     </form>
     <a
@@ -55,7 +55,7 @@ content %}
           href="#list-{{ card.num }}"
           role="tab"
           aria-controls="{{ card.num }}"
-          >{{ card.title }}</a
+          >{{ card.num }}. {{ card.title }}</a
         >
       {% endfor %}
     </div>
