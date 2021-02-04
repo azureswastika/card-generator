@@ -84,6 +84,7 @@ content %}
             <p>{{ card.block2 }}</p>
           </div>
         </div>
+        <a class="btn btn-primary mt-2" href="{{ url_for('update_card', project=project.id, card=card.id) }}">Изменить</a>
         <a class="btn btn-danger mt-2" href="{{ url_for('delete_card', project=project.id, card=card.id) }}">Удалить</a>
       </div>
 

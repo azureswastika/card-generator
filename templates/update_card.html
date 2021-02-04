@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Проекты{% endblock title %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-8">
+      <h1>Проект: {{ project.name }}</h1>
+        <form class="form-control mt-2" method="POST" enctype="multipart/form-data">
+            <h2>Обновить карту</h2>
+            {{ form.title.label }} {{ form.title }}
+            {{ form.num.label }} {{ form.num }}
+            {{ form.block1.label }} {{ form.block1 }}
+            {{ form.block2.label }} {{ form.block2 }}
+            <img
+              class="mt-4 mb-2"
+              src="{{ url_for('static', filename=card.image) }}"
+              style="max-width: 256px; heigth: auto"
+            />
+            {{ form.image.label }} {{ form.image }}
+            <input class="btn btn-primary mt-2" type="submit" value="Обновить">
+        </form>
+    </div>
+    <div class="col-4">
+    </div>
+  </div>
+{% endblock %}

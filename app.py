@@ -1,7 +1,4 @@
-from pathlib import Path
-from random import choices
 from shutil import rmtree
-from string import ascii_letters
 
 from flask import Flask, redirect, render_template, request
 from flask.helpers import url_for
@@ -10,11 +7,9 @@ from peewee import IntegrityError
 from werkzeug.utils import secure_filename
 
 from database import Project, ProjectBackend, ProjectCard
-from forms import AddBackendProject, AddCardProject, CreateProject
+from forms import AddBackendProject, AddCardProject, CreateProject, UpdateCardProject
 from main import Geneartor
-
-upload_dir = Path(__file__).parent.joinpath("static")
-upload_dir.mkdir(exist_ok=True)
+from utlis import process_path, upload_dir
 
 app = Flask(__name__)
 app.config["WTF_CSRF_ENABLED"] = False
@@ -55,35 +50,38 @@ def project(pk):
             project_title = backend_form.title.data
             backend = request.files["backend"]
             main = request.files["main"]
-            b_path = upload_dir.joinpath(obj.name, secure_filename(backend.filename))
-            m_path = upload_dir.joinpath(obj.name, secure_filename(main.filename))
             if backend:
-                try:
-                    upload_dir.joinpath(obj.backend.backend).unlink(missing_ok=True)
-                except AttributeError:
-                    pass
+                b_path = process_path(
+                    obj.name,
+                    upload_dir.joinpath(obj.name, secure_filename(backend.filename)),
+                )
                 backend.save(b_path)
-            elif obj.backend:
-                b_path = Path(obj.backend.backend)
-            if main:
+                b_path = f"{obj.name}/{b_path.name}"
+            else:
                 try:
-                    upload_dir.joinpath(obj.backend.main).unlink(missing_ok=True)
+                    b_path = obj.backend.backend
                 except AttributeError:
-                    pass
+                    b_path = None
+            if main:
+                m_path = process_path(
+                    obj.name,
+                    upload_dir.joinpath(obj.name, secure_filename(main.filename)),
+                )
                 main.save(m_path)
-            elif obj.backend:
-                m_path = Path(obj.backend.main)
+                m_path = f"{obj.name}/{m_path.name}"
+            else:
+                try:
+                    m_path = obj.backend.main
+                except AttributeError:
+                    m_path = None
             if obj.backend:
                 obj.backend.title = project_title
-                obj.backend.backend = f"{obj.name}/{b_path.name}"
-                obj.backend.main = f"{obj.name}/{m_path.name}"
+                obj.backend.backend = b_path
+                obj.backend.main = m_path
                 obj.backend.save()
             else:
                 ProjectBackend.create(
-                    project=obj,
-                    title=project_title,
-                    backend=f"{obj.name}/{b_path.name}",
-                    main=f"{obj.name}/{m_path.name}",
+                    project=obj, title=project_title, backend=b_path, main=m_path,
                 )
             return redirect(url_for("project", pk=obj.id))
     if obj.backend:
@@ -114,14 +112,10 @@ def add_card(pk):
             block1 = card_form.block1.data
             block2 = card_form.block2.data
             image = request.files["image"]
-            path = upload_dir.joinpath(obj.name, secure_filename(image.filename))
-            if path.exists():
-                path = upload_dir.joinpath(
-                    obj.name,
-                    f"{path.stem}{''.join(choices(ascii_letters))}.{path.suffix}",
-                )
-            if image:
-                image.save(path)
+            path = process_path(
+                obj.name, upload_dir.joinpath(obj.name, secure_filename(image.filename))
+            )
+            image.save(path)
             if obj.cards:
                 num = obj.cards[-1].num + 1
             ProjectCard.create(
@@ -135,6 +129,47 @@ def add_card(pk):
             return redirect(url_for("project", pk=obj.id))
     context = {"project": obj, "form": card_form}
     return render_template("add_card.html", **context)
+
+
+@app.route("/project/<int:project>/<int:card>/update", methods=["GET", "POST"])
+def update_card(project, card):
+    project = Project.get_or_none(id=project)
+    card = ProjectCard.get_or_none(id=card)
+    if not project or not card:
+        return redirect(url_for("root"))
+    card_form = UpdateCardProject()
+    if request.method == "POST":
+        if card_form.validate_on_submit():
+            card_num = card_form.num.data
+            card_title = card_form.title.data
+            block1 = card_form.block1.data
+            block2 = card_form.block2.data
+            image = request.files["image"]
+            if card_num != card.num:
+                second_card = ProjectCard.get_or_none(project=project, num=card_num)
+                if second_card:
+                    second_card.num, card.num = card.num, second_card.num
+                    second_card.save()
+                    card.save()
+            if image:
+                path = process_path(
+                    project.name,
+                    upload_dir.joinpath(project.name, secure_filename(image.filename)),
+                )
+                image.save(path)
+                path = f"{project.name}/{path.name}"
+                card.image = path
+            card.title = card_title
+            card.block1 = block1
+            card.block2 = block2
+            card.save()
+            return redirect(url_for("project", pk=project.id))
+    card_form.num.data = card.num
+    card_form.title.data = card.title
+    card_form.block1.data = card.block1
+    card_form.block2.data = card.block2
+    context = {"project": project, "card": card, "form": card_form}
+    return render_template("update_card.html", **context)
 
 
 @app.route("/project/<int:project>/<int:card>/delete", methods=["GET"])

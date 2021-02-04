@@ -39,7 +39,7 @@ class Geneartor:
     frontend = Base(SRC_FRONTEND_IMG)
 
     header = ImageFont.truetype("src/Oswald-Regular.ttf", 55)
-    paragraph = ImageFont.truetype("src/Oswald-Regular.ttf", 14)
+    paragraph = ImageFont.truetype("src/Oswald-Regular.ttf", 15)
     white = (255, 255, 255, 0)
     blue = (40, 101, 176, 0)
     white2 = (0, 0, 0, 0)
