@@ -1,6 +1,5 @@
 from pathlib import Path
 from textwrap import fill, wrap
-from threading import Thread
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -15,7 +14,7 @@ MAIN_IMG = "main.jpg"
 FRONTEND_DIR = "frontend"
 TEXT_FILE = "data.txt"
 
-FFORMAT = "jpg"
+FFORMAT = "png"
 CONVERT = "RGB"
 
 
@@ -40,9 +39,9 @@ class Geneartor:
 
     header = ImageFont.truetype("src/Oswald-Regular.ttf", 55)
     paragraph = ImageFont.truetype("src/Oswald-Regular.ttf", 15)
-    white = (255, 255, 255, 0)
+    white = "white"
+    black = (0, 0, 0, 0)
     blue = (40, 101, 176, 0)
-    white2 = (0, 0, 0, 0)
 
     def __init__(self, obj) -> None:
         self.name = obj.name
@@ -58,9 +57,9 @@ class Geneartor:
         self.cards = obj.cards
 
     def start(self) -> None:
-        Thread(target=self.create_backend, daemon=True).start()
-        Thread(target=self.create_main, daemon=True).start()
-        Thread(target=self.create_frontend, daemon=True).start()
+        self.create_backend()
+        self.create_frontend()
+        self.create_main()
 
     def create_backend(self) -> None:
         box = (
@@ -125,7 +124,7 @@ class Geneartor:
         self.main.reset()
 
     def create_frontend(self):
-        for i, el in enumerate(self.cards):
+        for el in self.cards:
             image = Image.open(self.static.joinpath(el.image))
             if image.width > 710 or image.height > 590:
                 image.thumbnail((710, 590), Image.ANTIALIAS)
@@ -140,48 +139,43 @@ class Geneartor:
 
             draw = ImageDraw.Draw(self.frontend.image)
 
-            w, h = draw.textsize(str(i + 1), self.header)
+            w, h = draw.textsize(str(el.num), self.header)
             box = (112 - w // 2, 112 - h // 1.5)
-            draw.text(box, str(i + 1), font=self.header, fill=self.white2)
+            draw.text(box, str(el.num), font=self.header, fill=self.black)
             title = self.process_text(el.title)
             if list(title).count("\n") >= 2:
                 n_count = list(title).count("\n")
                 title = self.process_text(el.title, 35 + 5 * n_count)
-                subheader = ImageFont.truetype("src/Oswald-Regular.ttf", 55 - 5 * n_count)
+                subheader = ImageFont.truetype(
+                    "src/Oswald-Regular.ttf", 55 - 5 * n_count
+                )
                 w, h = draw.textsize(title, subheader)
                 box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
                 draw.multiline_text(
-                    box,
-                    title,
-                    font=subheader,
-                    fill=self.white2,
-                    align="center",
+                    box, title, font=subheader, fill=self.black, align="center"
                 )
             else:
                 w, h = draw.textsize(title, self.header)
                 box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
                 draw.multiline_text(
-                    box, title, font=self.header, fill=self.white2, align="center",
+                    box, title, font=self.header, fill=self.black, align="center",
                 )
 
             draw.multiline_text(
-                (90, 960),
-                fill(el.block1, 70, break_long_words=True),
-                font=self.paragraph,
-                fill=self.white2,
+                (90, 960), fill(el.block1, 58), font=self.paragraph, fill=self.black,
             )
 
             draw.multiline_text(
-                (490, 960),
-                fill(el.block2, 70, break_long_words=True),
-                font=self.paragraph,
-                fill=self.white2,
+                (490, 960), fill(el.block2, 58), font=self.paragraph, fill=self.black,
             )
 
             self.frontend.image.convert(CONVERT).save(
-                f"{OUTPUT_DIR}/{self.name}/frontend/{i}.{FFORMAT}"
+                f"{OUTPUT_DIR}/{self.name}/frontend/{el.num}.{FFORMAT}"
             )
             self.frontend.reset()
+
+    def add_title(self, draw, text, fill):
+        pass
 
     @staticmethod
     def process_text(text, width=35):

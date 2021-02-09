@@ -1,4 +1,5 @@
 from shutil import rmtree
+from threading import Thread
 
 from flask import Flask, redirect, render_template, request
 from flask.helpers import url_for
@@ -186,7 +187,7 @@ def generat_project(pk):
     obj.backend()
     if obj and obj.backend and obj.cards:
         generator = Geneartor(obj)
-        generator.start()
+        Thread(target=generator.start).start()
     return redirect(url_for("project", pk=pk))
 
 
