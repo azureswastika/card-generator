@@ -9,11 +9,6 @@ SRC_FRONTEND_IMG = "src/frontend.jpg"
 OUTPUT_DIR = "output"
 DATA_DIR = "static"
 
-BACKEND_IMG = "backend.jpg"
-MAIN_IMG = "main.jpg"
-FRONTEND_DIR = "frontend"
-TEXT_FILE = "data.txt"
-
 FFORMAT = "png"
 CONVERT = "RGB"
 
@@ -73,22 +68,7 @@ class Geneartor:
                 self.f_backend, box, self.f_backend.convert("RGBA")
             )
         draw = ImageDraw.Draw(self.backend.image)
-        if list(self.title).count("\n") >= 2:
-            n_count = list(self.title).count("\n")
-            self.title = self.process_text(self.title, 35 + 5 * n_count)
-            subheader = ImageFont.truetype("src/Oswald-Regular.ttf", 55 - 5 * n_count)
-            self.title = self.process_text(self.title, 40)
-            w, h = draw.textsize(self.title, subheader)
-            box = ((self.backend.w - w) / 2, 1150 - h / 2)
-            draw.multiline_text(
-                box, self.title, font=subheader, fill=self.blue, align="center"
-            )
-        else:
-            w, h = draw.textsize(self.title, self.header)
-            box = ((self.backend.w - w) / 2, 1150 - h / 2)
-            draw.multiline_text(
-                box, self.title, font=self.header, fill=self.blue, align="center"
-            )
+        draw = self.add_title(draw, self.title, self.blue, 1150)
         self.backend.image.convert(CONVERT).save(
             self.output.joinpath(f"{self.name}/backend.{FFORMAT}")
         )
@@ -110,13 +90,6 @@ class Geneartor:
         draw.text(
             box, "0", font=self.header, fill=self.white,
         )
-
-        # adding header on main.jpg
-        # w, h = draw.textsize(obj.text.title, self.header)
-        # box = (470 - w // 2, 1150 - h // 2)
-        # draw.text(
-        #     box, obj.text.title, font=self.header, fill=self.white,
-        # )
 
         self.main.image.convert(CONVERT).save(
             self.output.joinpath(f"{self.name}/main.{FFORMAT}")
@@ -143,23 +116,7 @@ class Geneartor:
             box = (112 - w // 2, 112 - h // 1.5)
             draw.text(box, str(el.num), font=self.header, fill=self.black)
             title = self.process_text(el.title)
-            if list(title).count("\n") >= 2:
-                n_count = list(title).count("\n")
-                title = self.process_text(el.title, 35 + 5 * n_count)
-                subheader = ImageFont.truetype(
-                    "src/Oswald-Regular.ttf", 55 - 5 * n_count
-                )
-                w, h = draw.textsize(title, subheader)
-                box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
-                draw.multiline_text(
-                    box, title, font=subheader, fill=self.black, align="center"
-                )
-            else:
-                w, h = draw.textsize(title, self.header)
-                box = ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
-                draw.multiline_text(
-                    box, title, font=self.header, fill=self.black, align="center",
-                )
+            draw = self.add_title(draw, title, self.black)
 
             draw.multiline_text(
                 (90, 960), fill(el.block1, 58), font=self.paragraph, fill=self.black,
@@ -174,8 +131,26 @@ class Geneartor:
             )
             self.frontend.reset()
 
-    def add_title(self, draw, text, fill):
-        pass
+    def add_title(self, draw, title, fill, heigth=None):
+        if list(title).count("\n") >= 2:
+            n_count = list(title).count("\n")
+            title = self.process_text(title, 35 + 5 * n_count)
+            subheader = ImageFont.truetype("src/Oswald-Regular.ttf", 55 - 5 * n_count)
+            w, h = draw.textsize(title, subheader)
+            box = self.process_heigth(w, h, heigth)
+            draw.multiline_text(box, title, font=subheader, fill=fill, align="center")
+            return draw
+        w, h = draw.textsize(title, self.header)
+        box = self.process_heigth(w, h, heigth)
+        draw.multiline_text(
+            box, title, font=self.header, fill=fill, align="center",
+        )
+        return draw
+
+    def process_heigth(self, w, h, heigth):
+        if heigth:
+            return ((self.frontend.w - w) / 2, heigth - h / 2)
+        return ((self.frontend.w - w) / 2, (self.frontend.h - h) / 2 + 150)
 
     @staticmethod
     def process_text(text, width=35):
