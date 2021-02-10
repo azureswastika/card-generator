@@ -22,6 +22,15 @@ class BaseModel(Model):
 class Project(BaseModel):
     name = CharField(100, unique=True)
 
+    def __call__(self, *args, **kwds):
+        self.backend = ProjectBackend.get_or_none(project=self)
+        self.cards = (
+            ProjectCard.select()
+            .where(ProjectCard.project == self)
+            .order_by(ProjectCard.num)
+        )
+        return self
+
     def dlt(self):
         try:
             ProjectBackend.get(project=self).delete_instance()
@@ -30,14 +39,6 @@ class Project(BaseModel):
         for el in ProjectCard.select().where(ProjectCard.project == self):
             el.delete_instance()
         return self.delete_instance()
-
-    def backend(self):
-        self.backend = ProjectBackend.get_or_none(project=self)
-        self.cards = (
-            ProjectCard.select()
-            .where(ProjectCard.project == self)
-            .order_by(ProjectCard.num)
-        )
 
     def update_data(self, id, data):
         query = self.__class__.update(**data).where(self.id == id)

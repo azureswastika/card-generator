@@ -37,10 +37,9 @@ def root():
 
 @app.route("/project/<int:pk>", methods=["GET", "POST"])
 def project(pk):
-    obj = Project.get_or_none(id=pk)
+    obj = Project.get_or_none(id=pk)()
     if not obj:
         return redirect(url_for("root"))
-    obj.backend()
     backend_form = AddBackendProject()
     if request.method == "POST" and backend_form.validate_on_submit():
         backend_form = backend_form.get_data()
@@ -68,10 +67,9 @@ def delete_project(pk):
 @app.route("/project/<int:pk>/add_card", methods=["GET", "POST"])
 def add_card(pk):
     num = 1
-    obj = Project.get_or_none(id=pk)
+    obj = Project.get_or_none(id=pk)()
     if not obj:
         return redirect(url_for("root"))
-    obj.backend()
     card_form = AddCardProject()
     if request.method == "POST" and card_form.validate_on_submit():
         card_form = card_form.get_data()
@@ -93,13 +91,9 @@ def update_card(project, card):
     card_form = UpdateCardProject()
     if request.method == "POST" and card_form.validate_on_submit():
         card_form = card_form.get_data()
-        card_form["image"] = process_image(project, "image")
-        if not card_form["image"]:
-            card_form["image"] = card.image
+        card_form["image"] = process_image(project, "image", card)
         if card_form["num"] != card.num:
-            second_card = ProjectCard.get_or_none(
-                project=project, num=card_form["num"]
-            )
+            second_card = ProjectCard.get_or_none(project=project, num=card_form["num"])
             if second_card:
                 second_card.num, card.num = card.num, second_card.num
                 second_card.save()
@@ -120,15 +114,14 @@ def delete_card(project, card):
 
 @app.route("/project/<int:pk>/generate", methods=["GET"])
 def generat_project(pk):
-    obj = Project.get_by_id(pk)
-    obj.backend()
+    obj = Project.get_by_id(pk)()
     if obj and obj.backend and obj.cards:
         generator = Geneartor(obj)
         Thread(target=generator.start).start()
     return redirect(url_for("project", pk=pk))
 
 
-def process_image(obj: Project, image: str) -> str or None:
+def process_image(obj: Project, image: str, card: ProjectCard = None) -> str or None:
     image = request.files[image]
     if image:
         path = process_path(
@@ -137,6 +130,8 @@ def process_image(obj: Project, image: str) -> str or None:
         image.save(path)
         path = f"{obj.name}/{path.name}"
         return path
+    if card:
+        return card.image
     try:
         path = obj.backend.backend
     except AttributeError:
