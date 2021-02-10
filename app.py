@@ -4,7 +4,6 @@ from threading import Thread
 from flask import Flask, redirect, render_template, request
 from flask.helpers import url_for
 from flask_uploads import IMAGES, UploadSet, configure_uploads
-from peewee import IntegrityError
 from werkzeug.utils import secure_filename
 
 from database import Project, ProjectBackend, ProjectCard
@@ -24,16 +23,13 @@ configure_uploads(app, (images,))
 @app.route("/index", methods=["GET", "POST"])
 def root():
     form = CreateProject()
-    if request.method == "POST":
-        if form.validate_on_submit():
-            project_name = form.name.data
-            try:
-                Project.create(name=project_name).save()
-            except IntegrityError:
-                pass
-            project = Project.get(name=project_name)
-            upload_dir.joinpath(project_name).mkdir(exist_ok=True)
-            return redirect(url_for("project", pk=project.id))
+    if request.method == "POST" and form.validate_on_submit():
+        form = form.get_data()
+        if not Project.get_or_none(**form):
+            Project.create(**form).save()
+        project = Project.get(**form)
+        upload_dir.joinpath(project.name).mkdir(exist_ok=True)
+        return redirect(url_for("project", pk=project.id))
     projects = Project.select()
     context = {"projects": projects, "form": form}
     return render_template("index.html", **context)
@@ -46,16 +42,15 @@ def project(pk):
         return redirect(url_for("root"))
     obj.backend()
     backend_form = AddBackendProject()
-    if request.method == "POST":
-        if backend_form.validate_on_submit():
-            backend_form = backend_form.get_data()
-            backend_form["backend"] = process_image(obj, "backend")
-            backend_form["main"] = process_image(obj, "main")
-            if obj.backend:
-                obj.backend.update_data(obj.backend.id, backend_form)
-            else:
-                ProjectBackend.create(project=obj, **backend_form)
-            return redirect(url_for("project", pk=obj.id))
+    if request.method == "POST" and backend_form.validate_on_submit():
+        backend_form = backend_form.get_data()
+        backend_form["backend"] = process_image(obj, "backend")
+        backend_form["main"] = process_image(obj, "main")
+        if obj.backend:
+            obj.backend.update_data(obj.backend.id, backend_form)
+        else:
+            ProjectBackend.create(project=obj, **backend_form)
+        return redirect(url_for("project", pk=obj.id))
     if obj.backend:
         backend_form.load_data(obj.backend)
     context = {"project": obj, "form": backend_form}
@@ -78,14 +73,13 @@ def add_card(pk):
         return redirect(url_for("root"))
     obj.backend()
     card_form = AddCardProject()
-    if request.method == "POST":
-        if card_form.validate_on_submit():
-            card_form = card_form.get_data()
-            card_form["image"] = process_image(obj, "image")
-            if obj.cards:
-                num = obj.cards[-1].num + 1
-            ProjectCard.create(num=num, project=obj, **card_form).save()
-            return redirect(url_for("project", pk=obj.id))
+    if request.method == "POST" and card_form.validate_on_submit():
+        card_form = card_form.get_data()
+        card_form["image"] = process_image(obj, "image")
+        if obj.cards:
+            num = obj.cards[-1].num + 1
+        ProjectCard.create(num=num, project=obj, **card_form).save()
+        return redirect(url_for("project", pk=obj.id))
     context = {"project": obj, "form": card_form}
     return render_template("add_card.html", **context)
 
@@ -97,21 +91,20 @@ def update_card(project, card):
     if not project or not card:
         return redirect(url_for("root"))
     card_form = UpdateCardProject()
-    if request.method == "POST":
-        if card_form.validate_on_submit():
-            card_form = card_form.get_data()
-            card_form["image"] = process_image(project, "image")
-            if not card_form["image"]:
-                card_form["image"] = card.image
-            if card_form["num"] != card.num:
-                second_card = ProjectCard.get_or_none(
-                    project=project, num=card_form["num"]
-                )
-                if second_card:
-                    second_card.num, card.num = card.num, second_card.num
-                    second_card.save()
-            card.update_data(card.id, card_form)
-            return redirect(url_for("project", pk=project.id))
+    if request.method == "POST" and card_form.validate_on_submit():
+        card_form = card_form.get_data()
+        card_form["image"] = process_image(project, "image")
+        if not card_form["image"]:
+            card_form["image"] = card.image
+        if card_form["num"] != card.num:
+            second_card = ProjectCard.get_or_none(
+                project=project, num=card_form["num"]
+            )
+            if second_card:
+                second_card.num, card.num = card.num, second_card.num
+                second_card.save()
+        card.update_data(card.id, card_form)
+        return redirect(url_for("project", pk=project.id))
     card_form.load_data(card)
     context = {"project": project, "card": card, "form": card_form}
     return render_template("update_card.html", **context)
