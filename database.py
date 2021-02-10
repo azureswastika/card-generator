@@ -14,6 +14,10 @@ class BaseModel(Model):
     class Meta:
         database = db
 
+    def update_data(self, id, data):
+        query = self.__class__.update(**data).where(self.__class__.id == id)
+        query.execute()
+
 
 class Project(BaseModel):
     name = CharField(100, unique=True)
@@ -34,6 +38,10 @@ class Project(BaseModel):
             .where(ProjectCard.project == self)
             .order_by(ProjectCard.num)
         )
+
+    def update_data(self, id, data):
+        query = self.__class__.update(**data).where(self.id == id)
+        query.execute()
 
 
 class ProjectBackend(BaseModel):

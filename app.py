@@ -48,45 +48,16 @@ def project(pk):
     backend_form = AddBackendProject()
     if request.method == "POST":
         if backend_form.validate_on_submit():
-            project_title = backend_form.title.data
-            backend = request.files["backend"]
-            main = request.files["main"]
-            if backend:
-                b_path = process_path(
-                    obj.name,
-                    upload_dir.joinpath(obj.name, secure_filename(backend.filename)),
-                )
-                backend.save(b_path)
-                b_path = f"{obj.name}/{b_path.name}"
-            else:
-                try:
-                    b_path = obj.backend.backend
-                except AttributeError:
-                    b_path = None
-            if main:
-                m_path = process_path(
-                    obj.name,
-                    upload_dir.joinpath(obj.name, secure_filename(main.filename)),
-                )
-                main.save(m_path)
-                m_path = f"{obj.name}/{m_path.name}"
-            else:
-                try:
-                    m_path = obj.backend.main
-                except AttributeError:
-                    m_path = None
+            backend_form = backend_form.get_data()
+            backend_form["backend"] = process_image(obj, "backend")
+            backend_form["main"] = process_image(obj, "main")
             if obj.backend:
-                obj.backend.title = project_title
-                obj.backend.backend = b_path
-                obj.backend.main = m_path
-                obj.backend.save()
+                obj.backend.update_data(obj.backend.id, backend_form)
             else:
-                ProjectBackend.create(
-                    project=obj, title=project_title, backend=b_path, main=m_path,
-                )
+                ProjectBackend.create(project=obj, **backend_form)
             return redirect(url_for("project", pk=obj.id))
     if obj.backend:
-        backend_form.title.data = obj.backend.title
+        backend_form.load_data(obj.backend)
     context = {"project": obj, "form": backend_form}
     return render_template("project.html", **context)
 
@@ -109,24 +80,11 @@ def add_card(pk):
     card_form = AddCardProject()
     if request.method == "POST":
         if card_form.validate_on_submit():
-            card_title = card_form.title.data
-            block1 = card_form.block1.data
-            block2 = card_form.block2.data
-            image = request.files["image"]
-            path = process_path(
-                obj.name, upload_dir.joinpath(obj.name, secure_filename(image.filename))
-            )
-            image.save(path)
+            card_form = card_form.get_data()
+            card_form["image"] = process_image(obj, "image")
             if obj.cards:
                 num = obj.cards[-1].num + 1
-            ProjectCard.create(
-                num=num,
-                project=obj,
-                title=card_title,
-                image=f"{obj.name}/{path.name}",
-                block1=block1,
-                block2=block2,
-            ).save()
+            ProjectCard.create(num=num, project=obj, **card_form).save()
             return redirect(url_for("project", pk=obj.id))
     context = {"project": obj, "form": card_form}
     return render_template("add_card.html", **context)
@@ -141,34 +99,20 @@ def update_card(project, card):
     card_form = UpdateCardProject()
     if request.method == "POST":
         if card_form.validate_on_submit():
-            card_num = card_form.num.data
-            card_title = card_form.title.data
-            block1 = card_form.block1.data
-            block2 = card_form.block2.data
-            image = request.files["image"]
-            if card_num != card.num:
-                second_card = ProjectCard.get_or_none(project=project, num=card_num)
+            card_form = card_form.get_data()
+            card_form["image"] = process_image(project, "image")
+            if not card_form["image"]:
+                card_form["image"] = card.image
+            if card_form["num"] != card.num:
+                second_card = ProjectCard.get_or_none(
+                    project=project, num=card_form["num"]
+                )
                 if second_card:
                     second_card.num, card.num = card.num, second_card.num
                     second_card.save()
-                    card.save()
-            if image:
-                path = process_path(
-                    project.name,
-                    upload_dir.joinpath(project.name, secure_filename(image.filename)),
-                )
-                image.save(path)
-                path = f"{project.name}/{path.name}"
-                card.image = path
-            card.title = card_title
-            card.block1 = block1
-            card.block2 = block2
-            card.save()
+            card.update_data(card.id, card_form)
             return redirect(url_for("project", pk=project.id))
-    card_form.num.data = card.num
-    card_form.title.data = card.title
-    card_form.block1.data = card.block1
-    card_form.block2.data = card.block2
+    card_form.load_data(card)
     context = {"project": project, "card": card, "form": card_form}
     return render_template("update_card.html", **context)
 
@@ -189,6 +133,22 @@ def generat_project(pk):
         generator = Geneartor(obj)
         Thread(target=generator.start).start()
     return redirect(url_for("project", pk=pk))
+
+
+def process_image(obj: Project, image: str) -> str or None:
+    image = request.files[image]
+    if image:
+        path = process_path(
+            obj.name, upload_dir.joinpath(obj.name, secure_filename(image.filename)),
+        )
+        image.save(path)
+        path = f"{obj.name}/{path.name}"
+        return path
+    try:
+        path = obj.backend.backend
+    except AttributeError:
+        path = None
+    return path
 
 
 if __name__ == "__main__":

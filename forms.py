@@ -10,11 +10,20 @@ style = {"class": "form-control"}
 images = UploadSet("images", IMAGES, "media")
 
 
-class CreateProject(FlaskForm):
+class FormBase(FlaskForm):
+    def get_data(self):
+        return dict([(field, self._fields.get(field).data) for field in self._fields])
+
+    def load_data(self, obj):
+        for field in self._fields:
+            self._fields[field].data = obj.__dict__["__data__"][field]
+
+
+class CreateProject(FormBase):
     name = StringField("Название проекта", validators=[DataRequired()], render_kw=style)
 
 
-class AddBackendProject(FlaskForm):
+class AddBackendProject(FormBase):
     title = StringField("Заголовок", validators=[DataRequired()], render_kw=style)
     backend = FileField(
         "Оборотная сторона", validators=[FileAllowed(images)], render_kw=style
@@ -24,7 +33,7 @@ class AddBackendProject(FlaskForm):
     )
 
 
-class AddCardProject(FlaskForm):
+class AddCardProject(FormBase):
     title = StringField("Заголовок", validators=[DataRequired()], render_kw=style)
     image = FileField(
         "Фото", validators=[FileRequired(), FileAllowed(images)], render_kw=style
@@ -33,7 +42,7 @@ class AddCardProject(FlaskForm):
     block2 = TextAreaField(label="Блок текста 2", render_kw=style)
 
 
-class UpdateCardProject(FlaskForm):
+class UpdateCardProject(FormBase):
     num = IntegerField("Нумерация", [NumberRange(min=1)], render_kw=style)
     title = StringField("Заголовок", validators=[DataRequired()], render_kw=style)
     image = FileField("Фото", validators=[FileAllowed(images)], render_kw=style)
