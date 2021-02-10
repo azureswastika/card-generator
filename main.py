@@ -182,6 +182,11 @@ class Geneartor:
                 f"{OUTPUT_DIR}/{self.name}/frontend/{i}.{FFORMAT}"
             )
             self.frontend.reset()
+    #доделать
+    def create_pdf(self):
+        image1 = Image.open('1.png')
+        im1 = image1.convert('RGB')
+        im1.save('1.pdf')
 
     @staticmethod
     def process_text(text, width=35):
