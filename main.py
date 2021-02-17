@@ -2,6 +2,7 @@ from pathlib import Path
 from textwrap import fill, wrap
 
 from PIL import Image, ImageDraw, ImageFont
+from reportlab.pdfgen import canvas
 
 SRC_BACKEND_IMG = "src/backend.jpg"
 SRC_MAIN_IMG = "src/main.jpg"
@@ -51,6 +52,8 @@ class Geneartor:
     main = Base(SRC_MAIN_IMG)
     frontend = Base(SRC_FRONTEND_IMG)
 
+    output_files = list()
+
     def __init__(self, obj) -> None:
         self.name = obj.name
         output.joinpath(self.name).mkdir(exist_ok=True)
@@ -64,6 +67,7 @@ class Geneartor:
         self.create_backend()
         self.create_frontend()
         self.create_main()
+        self.create_pdf()
 
     def create_backend(self) -> None:
         box = (
@@ -76,6 +80,7 @@ class Geneartor:
         self.backend.image.convert(CONVERT).save(
             output.joinpath(f"{self.name}/backend.{FFORMAT}")
         )
+        self.backend_path = output.joinpath(f"{self.name}/backend.{FFORMAT}")
         self.backend.reset()
 
     def create_main(self) -> None:
@@ -93,6 +98,7 @@ class Geneartor:
         self.main.image.convert(CONVERT).save(
             output.joinpath(f"{self.name}/main.{FFORMAT}")
         )
+        self.output_files.append(str(output.joinpath(f"{self.name}/main.{FFORMAT}")))
         self.main.reset()
 
     def create_frontend(self):
@@ -120,6 +126,7 @@ class Geneartor:
             self.frontend.image.convert(CONVERT).save(
                 f"{OUTPUT_DIR}/{self.name}/frontend/{el.num}.{FFORMAT}"
             )
+            self.output_files.append(f"{OUTPUT_DIR}/{self.name}/frontend/{el.num}.{FFORMAT}")
             self.frontend.reset()
 
     def add_title(self, draw, title, fill, heigth=None):
@@ -137,6 +144,15 @@ class Geneartor:
             box, title, font=header, fill=fill, align="center",
         )
         return draw
+
+    def create_pdf(self, step=3):
+        # FIXME
+        pdf = canvas.Canvas(f"{OUTPUT_DIR}/{self.name}/pdf_file.pdf")
+        pdf.setPageSize((2480, 3508))
+        for i in range(0, len(self.output_files), step):
+            images = self.output_files[i:i + step]
+        pdf.save()
+        self.output_files = list()
 
     def process_heigth(self, w, h, heigth):
         if heigth:
