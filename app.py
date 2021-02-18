@@ -125,7 +125,8 @@ def process_image(obj: Project, image: str, card: ProjectCard = None) -> str or 
     image = request.files[image]
     if image:
         path = process_path(
-            obj.name, upload_dir.joinpath(obj.name, secure_filename(image.filename)),
+            obj.name,
+            upload_dir.joinpath(obj.name, secure_filename(image.filename)),
         )
         image.save(path)
         path = f"{obj.name}/{path.name}"

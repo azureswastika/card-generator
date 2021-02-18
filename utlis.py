@@ -9,7 +9,8 @@ upload_dir.mkdir(exist_ok=True)
 def process_path(name: str, path: Path):
     if path.exists():
         path = upload_dir.joinpath(
-            name, f"{path.stem}{''.join(choices(ascii_letters))}{path.suffix}",
+            name,
+            f"{path.stem}{''.join(choices(ascii_letters))}{path.suffix}",
         )
         path = Path(process_path(name, path))
     return path
