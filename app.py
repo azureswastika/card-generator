@@ -1,3 +1,5 @@
+import subprocess
+from pathlib import Path
 from shutil import rmtree
 from threading import Thread
 
@@ -119,6 +121,16 @@ def generat_project(pk):
         generator = Geneartor(obj)
         Thread(target=generator.start).start()
     return redirect(url_for("project", pk=pk))
+
+
+@app.route("/project/<int:pk>/open_file", methods=["GET"])
+def open_file(pk):
+    path = Path(__file__).parent
+    project = Project.get_or_none(id=pk)
+    subprocess.Popen(
+        [path.joinpath(f"output/{project.name}/pdf_file.pdf").absolute()], shell=True
+    )
+    return redirect(url_for("root"))
 
 
 def process_image(obj: Project, image: str, card: ProjectCard = None) -> str or None:
