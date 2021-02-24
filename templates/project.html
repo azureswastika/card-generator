@@ -41,6 +41,7 @@ content %}
     >
   </div>
   <div class="col-2">
+    <a class="btn btn-primary" href="{{ url_for('open_file', pk=project.id) }}">Открыть pdf</a>
     <a
       class="btn btn-primary mt-4 mb-4"
       href="{{ url_for('add_card', pk=project.id) }}"

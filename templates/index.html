@@ -17,6 +17,7 @@
             <div id="collapse{{ project }}" class="accordion-collapse collapse" aria-labelledby="heading{{ project }}" data-bs-parent="#accordionExample">
               <div class="accordion-body">
                 <a class="btn btn-primary" href="{{ url_for('project', pk=project.id) }}">Открыть</a>
+                <a class="btn btn-primary" href="{{ url_for('open_file', pk=project.id) }}">Открыть pdf</a>
                 <a class="btn btn-danger" href="{{ url_for('delete_project', pk=project.id) }}">Удалить</a>
               </div>
             </div>

@@ -1,7 +1,9 @@
 from pathlib import Path
+from shutil import rmtree
 from textwrap import fill, wrap
 
 from PIL import Image, ImageDraw, ImageFont
+from reportlab.pdfgen import canvas
 
 SRC_BACKEND_IMG = "src/backend.jpg"
 SRC_MAIN_IMG = "src/main.jpg"
@@ -53,17 +55,20 @@ class Geneartor:
 
     def __init__(self, obj) -> None:
         self.name = obj.name
-        output.joinpath(self.name).mkdir(exist_ok=True)
-        output.joinpath(self.name, "frontend").mkdir(exist_ok=True)
         self.title = self.process_text(obj.backend.title)
         self.f_backend = Image.open(static.joinpath(obj.backend.backend))
         self.f_main = Image.open(static.joinpath(obj.backend.main))
         self.cards = obj.cards
+        rmtree(output.joinpath(self.name), ignore_errors=True)
+        output.joinpath(self.name).mkdir(exist_ok=True)
+        output.joinpath(self.name, "frontend").mkdir(exist_ok=True)
+        self.output_files = list()
 
     def start(self) -> None:
         self.create_backend()
-        self.create_frontend()
         self.create_main()
+        self.create_frontend()
+        self.create_pdf()
 
     def create_backend(self) -> None:
         box = (
@@ -76,6 +81,7 @@ class Geneartor:
         self.backend.image.convert(CONVERT).save(
             output.joinpath(f"{self.name}/backend.{FFORMAT}")
         )
+        self.backend_path = output.joinpath(f"{self.name}/backend.{FFORMAT}")
         self.backend.reset()
 
     def create_main(self) -> None:
@@ -93,6 +99,7 @@ class Geneartor:
         self.main.image.convert(CONVERT).save(
             output.joinpath(f"{self.name}/main.{FFORMAT}")
         )
+        self.output_files.append(str(output.joinpath(f"{self.name}/main.{FFORMAT}")))
         self.main.reset()
 
     def create_frontend(self):
@@ -120,6 +127,9 @@ class Geneartor:
             self.frontend.image.convert(CONVERT).save(
                 f"{OUTPUT_DIR}/{self.name}/frontend/{el.num}.{FFORMAT}"
             )
+            self.output_files.append(
+                f"{OUTPUT_DIR}/{self.name}/frontend/{el.num}.{FFORMAT}"
+            )
             self.frontend.reset()
 
     def add_title(self, draw, title, fill, heigth=None):
@@ -137,6 +147,21 @@ class Geneartor:
             box, title, font=header, fill=fill, align="center",
         )
         return draw
+
+    def create_pdf(self, step=4):
+        pdf = canvas.Canvas(f"{OUTPUT_DIR}/{self.name}/pdf_file.pdf")
+        pdf.setPageSize((2480, 3508))
+        sizes = [(100, 2000), (1400, 2000), (100, 500), (1400, 500)]
+        while self.output_files:
+            images = self.output_files[:step]
+            for s, f in zip(sizes, images):
+                pdf.drawImage(f, *s)
+            pdf.showPage()
+            for s, f in zip(sizes, [self.backend_path for i in range(len(images))]):
+                pdf.drawImage(f, *s)
+            pdf.showPage()
+            self.output_files = self.output_files[step:]
+        pdf.save()
 
     def process_heigth(self, w, h, heigth):
         if heigth:
